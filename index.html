@@ -86,7 +86,14 @@ td.amt{font-weight:700}
 .btn[disabled]{opacity:.5;cursor:not-allowed}
 .back{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:500;width:max-content}
 .back .iconbtn{width:32px;height:32px}
-.head{background:#fff;border-radius:24px;padding:16px;display:flex;justify-content:space-between;align-items:center}
+.head{background:#fff;border-radius:24px;padding:16px}
+.hrow{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.hpanel,.inner{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.hpanel{background:var(--panel);border-radius:16px;padding:14px 16px;margin-top:16px}
+.hstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;border-top:1px solid var(--line);margin-top:10px;padding-top:8px}
+.inner{background:#fff;border-radius:12px;padding:14px 16px;margin:0 0 12px}
+.hpanel small,.hstrip small,.inner small{display:block;color:var(--muted);font-size:11px;margin-bottom:4px;font-weight:500}
+.hpanel b,.hstrip b,.inner b{font-size:11px;font-weight:600;display:flex;gap:6px;align-items:center}
 .head .amt{font-size:32px;font-weight:700;letter-spacing:-.5px;display:flex;align-items:center;gap:12px}
 .head .meta{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;margin-top:6px;font-weight:500}
 .head .acts{display:flex;gap:12px}
@@ -95,6 +102,7 @@ td.amt{font-weight:700}
 .b-failed{background:var(--red-bg);color:var(--red-ink);border-color:#f0a8a8}
 .b-pending{background:var(--amber-bg);color:var(--amber-ink);border-color:#f0cf86}
 .b-refinit{background:var(--primary-soft);color:#2f1a99;border-color:#c2b8f3}
+.b-cancelled{background:#ececf2;color:var(--muted);border-color:#d9d9e8}
 .b-refunded{background:var(--blue-bg);color:var(--blue-ink);border-color:#aec6f7}
 .banner{display:flex;gap:12px;align-items:center;border-radius:12px;padding:12px 16px}
 .banner .tx{flex:1}
@@ -167,9 +175,9 @@ td.amt{font-weight:700}
 .center .sub{margin:8px auto 0;max-width:340px;font-size:11px;line-height:1.5}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;padding:12px 20px;border-radius:24px;font-size:13px;font-weight:500;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.25)}
 .empty{text-align:center;color:var(--faint);padding:40px 0;font-size:13px}
-.head{flex-wrap:wrap;gap:12px}.head .meta{flex-wrap:wrap}.head .acts{flex-wrap:wrap}
-@media (max-width:1000px){.cols{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.grid4{grid-template-columns:repeat(2,1fr)}.card{overflow-x:auto}}
-@media (max-width:640px){.side{display:none}.head{flex-direction:column;align-items:flex-start;gap:12px}.head .acts{flex-wrap:wrap}}
+.head .meta{flex-wrap:wrap}.head .acts{flex-wrap:wrap}
+@media (max-width:1000px){.cols{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.grid4,.hpanel,.inner{grid-template-columns:repeat(2,1fr)}.hstrip{grid-template-columns:repeat(3,1fr)}.card{overflow-x:auto}}
+@media (max-width:640px){.side{display:none}.hrow{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -228,6 +236,7 @@ const STATUS = {
   refinit:{label:"Refund initiated",dot:"d-refinit",badge:"b-refinit"},
   pending:{label:"Pending",dot:"d-pending",badge:"b-pending"},
   failed:{label:"Failed",dot:"d-failed",badge:"b-failed"},
+  cancelled:{label:"Refund cancelled",dot:"d-cancel",badge:"b-cancelled"},
   success:{label:"Success",dot:"d-success",badge:"b-success"},
 };
 const SEED = [
@@ -252,7 +261,7 @@ const mkTxn = ([irn,order,cust,method,utr,amount,status,time,contact,bank,ph],i)
 
 /* ---------- helpers ---------- */
 const isCard = m => /Card/.test(m);
-const fees = a => { const f = +(a*0.018).toFixed(2); const g = +(f*0.18).toFixed(2); return {f,g,net:+(a-f-g).toFixed(2)}; };
+const fees = (a,r=0.018) => { const f = +(a*r).toFixed(2); const g = +(f*0.18).toFixed(2); return {f,g,net:+(a-f-g).toFixed(2)}; };
 const first = n => n.split(" ")[0];
 const mask = s => s.replace(/(\d{2})\.(\d+)\.(\d+)/,"$1.•••.$3");
 const hhmm = d => d.toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit",hour12:true}).toUpperCase().replace(/\s/g," ");
@@ -349,20 +358,22 @@ function Info({s}){ return <Icon n="info" s={14} c="var(--faint)"/>; }
 function CopyBtn({v,toast}){ return <button className="copy" aria-label="Copy" onClick={()=>{navigator.clipboard&&navigator.clipboard.writeText(v).catch(()=>{});toast("Copied")}}><Icon n="copy" s={14}/></button>; }
 
 function model(t){
-  const {f,g,net}=fees(t.amount); const card=isCard(t.method); const R=t.refund;
+  const card=isCard(t.method); const R=t.refund; const rate=card?0.02:0.018; const pct=(rate*100).toFixed(1)+"%";
+  const {f,g,net}=fees(t.amount,rate);
   const base={ title:inr(t.amount), irn:t.irn, order:t.order };
-  const cust=[["Customer",t.cust],["Phone",t.phone],["Bank",t.bank],["Method",card?`${t.method} ••${4242}`:t.method],["Email",t.contact.includes("@example")?t.contact:`${first(t.cust).toLowerCase()}@example.com`]];
-  const tdet = (a)=>[...a];
+  const email=t.contact.includes("@example")?t.contact:`${first(t.cust).toLowerCase()}@example.com`;
+  const bankRows=[[["Customer",t.cust],["Phone",t.phone]],[["Bank",t.bank],["Method",card?`${t.method} ••4242`:t.method]],[["Email",email]]];
   const ip = "49.36.•••.21";
   if(t.status==="failed") return {...base,
     badge:"failed", meta:`Attempted 29 Oct 2026, ${t.time}`,
     banner:{kind:"failed",icon:"circleX",title:"Payment failed · Card declined by the issuing bank",text:"Bank code 05 · Do not honour. No money was collected. If the customer was debited, it is reversed automatically in 5–7 working days."},
     actions:["share-fail","resend"],
-    bdTitle:"Amount attempted", lines:[["Amount attempted",`Order ${t.order} · ${t.method}`,inr(t.amount),"strong"],["Refunds","Not applicable","₹0.00"],["Chargebacks","Not applicable","₹0.00"],["Platform fee","Not charged on failed payments","₹0.00",0,1],["GST on fees","Not charged on failed payments","₹0.00",0,1]],
+    panel:[["IRN",t.irn,1],["Order ID",t.order],["UTR / RRN","-"],["Transaction Date",`Attempted 29 Oct 2026, ${t.time}`]],
+    inner:[["Device","Chrome · Windows"],["IP address","103.21.•••.8"],["Webhook","Delivered · payment.failed"],["Settlement","Not applicable"]],
+    lines:[["Amount attempted",`Order ${t.order} · ${t.method}`,inr(t.amount),"strong"],["Refunds","Not applicable","₹0.00"],["Chargebacks","Not applicable","₹0.00"],["Platform fee","Not charged on failed payments","₹0.00",0,1],["GST on fees","Not charged on failed payments","₹0.00",0,1]],
     net:{cls:"neutral",title:"Net settlement",sub:"Nothing to settle for this payment",v:"₹0.00"},
-    tl:[["done","Order created",`29 Oct 2026, ${"3:29 PM"} · ${t.order}`],["done","Payment attempted",`${t.time} · ${card?"Visa ••4242 · 3-D Secure passed":t.method}`],["fail","Declined by bank",`${t.time} · Code 05 · Do not honour`],["idle","Settlement","Not applicable"]],
-    tlBadge:"failed", cust,
-    det:[["IRN",t.irn,1],["Error code","05 · Do not honour",1],["Issuer",`${t.bank} · Visa`],["Attempts","2 of 3 allowed"],["Device","Chrome · Windows"],["IP address","103.21.•••.8"],["Webhook","Delivered · payment.failed"],["Settlement","Not applicable"]],
+    tl:[["done","Order created",`29 Oct 2026, 3:29 PM · ${t.order}`],["done","Payment attempted",`${t.time} · ${card?"Visa ••4242 · 3-D Secure passed":t.method}`],["fail","Declined by bank",`${t.time} · Code 05 · Do not honour`],["idle","Settlement","Not applicable"]],
+    tlBadge:"failed", custRows:bankRows,
   };
   if(t.status==="pending") return {...base,
     badge:"pending", meta:`Initiated 29 Oct 2026, ${t.time}`,
@@ -371,25 +382,36 @@ function model(t){
     lines:[["Amount",`Order ${t.order} · ${t.method}`,inr(t.amount),"strong"],["Refunds","Not applicable yet","₹0.00"],["Chargebacks","Not applicable yet","₹0.00"],["Platform fee","Calculated once confirmed","Pending",0,1],["GST on fees","Calculated once confirmed","Pending",0,1]],
     net:{cls:"amber",title:"Expected settlement",sub:"Settles after the bank confirms",v:inr(t.amount)},
     tl:[["done","Order created",`29 Oct 2026, 3:23 PM · ${t.order}`],["done","Payment initiated",`${t.time} · ${t.method} · SBI`],["wait","Awaiting bank confirmation","Auto re-check in 3 min · expires 3:54 PM"],["idle","Settlement","Starts after confirmation"]],
-    tlBadge:"pending", cust,
+    tlBadge:"pending", custRows:bankRows,
     det:[["IRN",t.irn,1],["Bank reference","Awaiting",1],["Last checked","3:36 PM · auto"],["Expires at","3:54 PM"],["Device","Safari · iPhone"],["IP address","157.48.•••.60"],["Webhook","Queued · payment.pending"],["Settlement","After confirmation"]],
   };
-  // success / refinit / refunded / cancelled-refund (success + cancelled refund)
+  // success / refund initiated / refunded / success with a cancelled refund
   const cancelled = t.status==="success" && R && R.state==="cancelled";
-  const det0=[["IRN",t.irn,1],["UTR / RRN",t.utr,1],["Auth code","218934"],[card?"Card":"Customer UPI ID",card?`${t.method} ••4242 · Visa`:t.contact]];
-  const out={...base, meta:`Paid 29 Oct 2026, ${t.time}`, cust, tlBadge:t.status==="success"?"success":t.status};
-  const tl0=[["done","Order created",`29 Oct 2026, 3:31 PM · ${t.order}`],["done","Payment initiated",`3:31 PM · ${card?"Card · 3-D Secure":"UPI Intent via GPay"}`],["done","Payment captured",`${t.time} · Bank confirmed · UTR ${t.utr}`]];
+  const out={...base, meta:`Paid 29 Oct 2026, ${t.time}`, tlBadge:t.status==="success"?"success":t.status};
+  const tl0=[["done","Order created",`29 Oct 2026, 3:31 PM · ${t.order}`],["done","Payment initiated",card?`3:31 PM · ${t.method.replace(" Card","")==="Credit"?"Visa •••• 4242 · Credit":"Visa •••• 4242 · Debit"}`:"3:31 PM · UPI Intent via GPay"],...(card?[["done","3-D Secure verified","3:32 PM · OTP authenticated by issuer"]]:[]),["done","Payment captured",`${t.time} · Bank confirmed · UTR ${t.utr}`]];
+  const refTl=[["done","Payment captured",`29 Oct 2026, ${t.time} · UTR ${t.utr}`]];
   if(t.status==="success"){
     out.badge="success";
     out.actions=["receipt","share","refund"];
-    out.lines=[["Amount paid",`Order ${t.order} · ${t.method}`,inr(t.amount),"strong"],["Refunds","No refunds on this payment","₹0.00"],["Chargebacks","No chargebacks raised","₹0.00"],["Platform fee",`1.8% blended MDR on ${inr(t.amount)}`,`- ${inr(f)}`,0,1],["GST on fees","18% of platform fee",`- ${inr(g)}`,0,1]];
+    out.lines=[["Amount paid",`Order ${t.order} · ${card?"Visa "+t.method.toLowerCase():t.method}`,inr(t.amount),"strong"],["Refunds","No refunds on this payment","₹0.00"],["Chargebacks","No chargebacks raised","₹0.00"],["Platform fee",`${pct} blended MDR on ${inr(t.amount)}`,`- ${inr(f)}`,0,1],["GST on fees","18% of platform fee",`- ${inr(g)}`,0,1]];
     out.net={cls:"green",title:"Net settlement",sub:"Settles 30 Oct 2026 · STL-20261029-02",v:inr(net)};
     out.tl=[...tl0,["idle","Settlement","Expected 30 Oct 2026 · STL-20261029-02"]];
-    out.det=[...det0,["Device","Android · App"],["IP address",ip],["Webhook","Delivered · 200 OK"],["Receipt","Sent to customer"]];
+    if(card){
+      out.strip=[["UTR / RRN",t.utr,1],["Auth code","218934"],["Card","Visa •••• 4242"],["Card type",`${t.method.replace(" Card","")} · Domestic`],["IP address",ip],["Webhook","Delivered · 200 OK"],["Receipt","Sent to customer"]];
+      out.custRows=[[["Customer",t.cust],["Phone",t.phone]],[["Issuer",t.bank],["Method",`Visa ${t.method.toLowerCase()}`]],[["Email",email]]];
+    } else {
+      out.panel=[["IRN",t.irn,1],["Order ID",t.order],["UTR / RRN",t.utr,1],["Transaction Date",`Paid 29 Oct 2026, ${t.time}`]];
+      out.inner=[["Device","Android · App"],["IP address",ip],["Webhook","Delivered · 200 OK"],["Receipt","Sent to customer"]];
+      out.custRows=[[["Customer",t.cust],["Phone",t.phone]],[["Method",t.method],["Customer UPI ID",t.contact]],[["Email",email]]];
+    }
     if(cancelled){
-      out.banner={kind:"success",icon:"circleCheck",title:"Refund cancelled · no money moved",text:`Refund ${R.id} was cancelled before it reached the bank. This payment is back to Success and can be refunded again.`};
-      out.tl=[...tl0,["done","Refund initiated",`${R.at} · ${inr(t.amount)} · Instant · by RS`],["fail","Refund cancelled",`${R.cancelledAt} · ${R.reason||"No reason given"}`],["idle","Settlement","Expected 30 Oct 2026 · STL-20261029-02"]];
-      out.det=[...det0.slice(0,3),["Refund ID",R.id,1],["Refund ARN","Not generated"],["Initiated by","RS · Dashboard"],["Webhook","Delivered · refund.cancelled"],["Receipt","Sent to customer"]];
+      out.panel=null; out.inner=null;
+      out.strip=[["UTR / RRN",t.utr,1],["Refund ID",R.id],["Refund ARN","None · cancelled"],["Customer UPI ID",t.contact],["Cancelled by","RS · Dashboard"],["Webhook","Delivered · refund.cancelled"],["Receipt","Sent to customer"]];
+      out.custRows=bankRows;
+      out.banner={kind:"success",icon:"circleCheck",title:"Refund cancelled · no money moved",text:`${R.id} was cancelled at ${R.cancelledAt}, before it reached the bank. The payment is back to Success and can be refunded again.`};
+      out.lines[1]=["Refunds",`Refund ${R.id} cancelled`,"₹0.00"];
+      out.tl=[...refTl,["done","Refund initiated",`${R.at} · ${inr(t.amount)} · Instant · by RS`],["done","Refund cancelled",`${R.cancelledAt} · by RS · before bank submission`],["idle","Ready to refund again",`Full ${inr(t.amount)} is refundable`]];
+      out.tlBadge="cancelled";
       out.refunds=[[R.id,inr(t.amount),`29 Oct 2026, ${R.at}`,"Instant · UPI","None","cancel","Cancelled"]];
     }
     return out;
@@ -398,12 +420,13 @@ function model(t){
   const done=t.status==="refunded";
   out.badge=t.status;
   out.actions=done?["receipt","share"]:["receipt","share","cancel"];
-  out.lines=[["Amount paid",`Order ${t.order} · ${t.method}`,inr(t.amount),"strong"],["Refunds",`1 refund · ${R.id}${done?"":" · Queued"}`,`- ${inr(t.amount)}`],["Chargebacks","No chargebacks raised","₹0.00"],["Platform fee",`1.8% on ${inr(t.amount)} · not returned`,`- ${inr(f)}`,0,1],["GST on fees","18% of platform fee",`- ${inr(g)}`,0,1]];
+  out.custRows=bankRows;
+  out.strip=[["UTR / RRN",t.utr,1],["Refund ID",R.id],["Refund ARN",done?R.arn:"Not yet generated"],[done?"Customer UPI ID":"Customer ID",t.contact],["Initiated by","RS · Dashboard"],["Webhook",done?"Delivered · refund.processed":"Queued · refund.initiated"],["Receipt","Sent to customer"]];
+  out.lines=[["Amount paid",`Order ${t.order} · ${t.method}`,inr(t.amount),"strong"],["Refunds",`1 refund · ${R.id}${done?"":" · Queued"}`,`- ${inr(t.amount)}`],["Chargebacks","No chargebacks raised","₹0.00"],["Platform fee",`${pct} on ${inr(t.amount)} · not returned`,`- ${inr(f)}`,0,1],["GST on fees","18% of platform fee",`- ${inr(g)}`,0,1]];
   out.net={cls:"red",title:"Fee not returned",sub:"Platform fee + GST · deducted from your next settlement",v:`- ${inr(f+g)}`};
-  out.tl=[["done","Payment captured",`29 Oct 2026, ${t.time} · UTR ${t.utr}`],["done","Refund initiated",`${R.at} · ${inr(t.amount)} · Instant · by RS`],
+  out.tl=[...refTl,["done","Refund initiated",`${R.at} · ${inr(t.amount)} · Instant · by RS`],
     done?["done","Customer credited",`4:04 PM · ARN ${R.arn}`]:["wait","Sending to bank",`Scheduled for 4:12 PM · can be cancelled until then`],
     done?["idle","Adjusted in settlement",`STL-20261030-01 · - ${inr(f+g)}`]:["idle","Customer credited","After the bank confirms"]];
-  out.det=[["IRN",t.irn,1],["UTR / RRN",t.utr,1],["Refund ID",R.id],["Refund ARN",done?R.arn:"Not yet generated"],["Customer UPI ID",t.contact],["Initiated by","RS · Dashboard"],["Webhook",done?"Delivered · refund.processed":"Queued · refund.initiated"],["Receipt","Sent to customer"]];
   out.refunds=[[R.id,inr(t.amount),`29 Oct 2026, ${R.at}`,"Instant · UPI",done?R.arn:"Not yet generated",done?"success":"refunded",done?"Processed":"Queued"]];
   out.banner=done
     ?{kind:"success",icon:"circleCheck",title:`Refund completed · ${inr(t.amount)} credited to the customer`,text:`Refund ${R.id} was credited on 29 Oct 2026, 4:04 PM. This payment is fully refunded and cannot be refunded again.`}
@@ -438,24 +461,30 @@ function Detail({t,txns,back,dispatch,initial,toast}){
   return <Shell title="Transaction detail">
     <button className="back" onClick={back}><span className="iconbtn"><Icon n="back" s={18}/></span>Back to Collections</button>
     <section className="head">
-      <div>
-        <div className="amt">{m.title}<span className={"badge "+STATUS[m.badge].badge}>{label}</span></div>
-        <div className="meta">IRN {t.irn} <CopyBtn v={t.irn} toast={toast}/> <span>·</span> {t.order} <span>·</span> {m.meta}</div>
+      <div className="hrow">
+        <div>
+          <div className="amt">{m.title}<span className={"badge "+STATUS[m.badge].badge}>{label}</span></div>
+          {!m.panel&&<div className="meta">IRN {t.irn} <CopyBtn v={t.irn} toast={toast}/> <span>·</span> {t.order} <span>·</span> {m.meta}</div>}
+        </div>
+        <div className="acts">{m.actions.map(a=>actions[a])}</div>
       </div>
-      <div className="acts">{m.actions.map(a=>actions[a])}</div>
+      {m.panel&&<div className="hpanel">{m.panel.map(([k,v,c])=><div key={k}><small>{k}</small><b>{v}{c?<CopyBtn v={v} toast={toast}/>:null}</b></div>)}</div>}
+      {m.strip&&<div className="hstrip">{m.strip.map(([k,v,c])=><div key={k}><small>{k}</small><b>{v}{c?<CopyBtn v={v} toast={toast}/>:null}</b></div>)}</div>}
     </section>
     {m.banner&&<Banner b={m.banner} t={t} now={now}/>}
     <div className="cols">
       <div className="col">
         <section className="sec"><h3><Icon n="receipt" s={18}/>Payment breakdown</h3>
-          <div className="panel">{m.lines.map(([a,b,v,strong,info])=><div className="line" key={a}>
+          <div className="panel">{m.lines.map(([a,b,v,strong,info],i)=><React.Fragment key={a}><div className="line">
             <div><b>{a}{info?<Info/>:null}</b><small>{b}</small></div>
-            <span className={"v"+(strong?"":(v==="Pending"?" n":""))+(v==="₹0.00"&&!strong?" n":"")} style={v==="₹0.00"&&m.badge==="failed"?{color:"var(--muted)"}:null}>{v}</span></div>)}</div>
+            <span className={"v"+(strong?"":(v==="Pending"?" n":""))+(v==="₹0.00"&&!strong?" n":"")} style={v==="₹0.00"&&m.badge==="failed"?{color:"var(--muted)"}:null}>{v}</span></div>
+            {i===0&&m.inner&&<div className="inner">{m.inner.map(([k,x])=><div key={k}><small>{k}</small><b>{x}</b></div>)}</div>}
+          </React.Fragment>)}</div>
           <div className={"net "+m.net.cls}><div><b>{m.net.title}</b><small>{m.net.sub}</small></div><span className="v">{m.net.v}</span></div>
         </section>
-        <section className="sec"><h3><Icon n="file" s={18}/>Transaction details</h3>
+        {m.det&&<section className="sec"><h3><Icon n="file" s={18}/>Transaction details</h3>
           <div className="grid4">{m.det.map(([k,v,c])=><div key={k}><small>{k}</small><b>{v}{c?<CopyBtn v={v} toast={toast}/>:null}</b></div>)}</div>
-        </section>
+        </section>}
       </div>
       <div className="col">
         <section className="sec"><h3><Icon n="clock" s={18}/>Payment timeline<span className={"badge "+STATUS[m.tlBadge].badge}>{STATUS[m.tlBadge].label}</span></h3>
@@ -464,10 +493,7 @@ function Detail({t,txns,back,dispatch,initial,toast}){
             <div><b>{a}</b><small>{b}</small></div></div>)}</div>
         </section>
         <section className="sec"><h3><Icon n="user" s={18}/>Customer &amp; payment</h3>
-          <div className="cust">
-            <div className="rw"><div><small>Customer</small><b>{m.cust[0][1]}</b></div><div><small>Phone</small><b>{m.cust[1][1]}</b></div></div>
-            <div className="rw"><div><small>Bank</small><b>{m.cust[2][1]}</b></div><div><small>Method</small><b>{m.cust[3][1]}</b></div></div>
-            <div className="rw" style={{gridTemplateColumns:"1fr"}}><div><small>Email</small><b>{m.cust[4][1]}</b></div></div>
+          <div className="cust">{m.custRows.map((row,i)=><div className="rw" key={i} style={row.length===1?{gridTemplateColumns:"1fr"}:null}>{row.map(([k,v])=><div key={k}><small>{k}</small><b>{v}</b></div>)}</div>)}
           </div>
         </section>
       </div>
