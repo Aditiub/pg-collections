@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Collections · PG Merchant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#f4f4f4; --surface:#fff; --ink:#25253c; --muted:#606078; --faint:#8b8ba3;
+  --line:#eaeaf3; --line2:#d9d9e8; --field:#b4bbcc;
+  --primary:#533cd2; --primary-soft:#efecff; --dark:#231f45;
+  --green:#12a150; --green-bg:#e6f6ec; --green-ink:#0b6b34;
+  --red:#d92d3a; --red-bg:#fdeaea; --red-ink:#b3201f;
+  --amber:#f2a100; --amber-bg:#fef3dc; --amber-ink:#8a5200;
+  --blue:#2f6bff; --blue-bg:#e8f0ff; --blue-ink:#1e4fc2;
+  --panel:#f4f5fa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:14px;line-height:1.3;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,select{font:inherit;color:inherit}
+svg{display:block;flex:none}
+.shell{display:flex;gap:12px;padding:12px;min-height:100vh}
+.side{width:64px;flex:none;position:sticky;top:12px;height:calc(100vh - 24px);background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;align-items:center}
+.side .grp{display:flex;flex-direction:column;gap:8px;align-items:center}
+.logo{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6b4ee6,#2a1a80);color:#fff;display:grid;place-items:center;font-weight:700;font-size:20px;margin-bottom:8px}
+.nav{width:40px;height:40px;border-radius:24px;display:grid;place-items:center;color:var(--ink)}
+.nav.on{background:var(--dark);color:#fff}
+.nav.ai{color:var(--primary)}
+.avatar{width:40px;height:40px;border-radius:50%;background:#fff3d6;border:1px solid #e9c46a;display:grid;place-items:center;font-weight:600;font-size:12px;color:#8a5200}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
+.top{background:var(--surface);border-radius:24px;height:56px;padding:0 12px 0 12px;display:flex;align-items:center;justify-content:space-between}
+.top h1{font-size:15px;font-weight:600}
+.top .sub{color:var(--faint);font-weight:500;margin-left:8px;font-size:14px}
+.top .sub:before{content:"•";margin-right:8px}
+.top .r{display:flex;gap:8px;align-items:center}
+.iconbtn{width:36px;height:36px;border-radius:50%;border:1px solid var(--line2);display:grid;place-items:center;background:#fff}
+.me{width:40px;height:40px;border-radius:50%;background:var(--primary-soft);color:var(--primary);display:grid;place-items:center;font-weight:600;font-size:12px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.kpi{background:var(--surface);border-radius:20px;padding:16px;display:flex;gap:16px;align-items:center}
+.kpi .ic{width:48px;height:48px;border-radius:50%;background:#ececec;display:grid;place-items:center;color:var(--muted)}
+.kpi .ic.p{background:var(--primary-soft);color:var(--primary)}
+.kpi small{display:block;color:var(--muted);font-size:13px;font-weight:500;margin-bottom:4px}
+.kpi b{font-size:22px;font-weight:700;letter-spacing:-.2px}
+.card{background:var(--surface);border-radius:24px;padding:16px}
+.tools{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;position:relative}
+.tools h2{font-size:13px;font-weight:700;padding-left:4px}
+.tools .r{display:flex;gap:8px;position:relative}
+.search{display:flex;align-items:center;gap:8px;border:.5px solid var(--field);border-radius:24px;padding:10px 12px;width:213px;background:#fff;color:var(--faint)}
+.search input{border:0;outline:0;width:100%;font-size:12px;color:var(--ink);background:none}
+.pill{display:flex;gap:6px;align-items:center;border:.5px solid var(--field);border-radius:20px;padding:10px 12px;background:#fff;font-size:12px;font-weight:600}
+.pill.on{border-color:var(--primary);color:var(--primary)}
+table{width:100%;border-collapse:separate;border-spacing:0}
+thead th{background:#ececec;font-size:10px;font-weight:500;letter-spacing:.4px;color:var(--muted);text-align:left;padding:10px 12px;text-transform:uppercase}
+thead th:first-child{border-radius:12px 0 0 12px}thead th:last-child{border-radius:0 12px 12px 0}
+tbody td{padding:0 12px;height:44px;font-size:12px;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody tr.row{cursor:pointer}
+tbody tr.row:hover td{background:#fafaff}
+td .t{color:var(--faint);font-size:10px;margin-left:4px}
+td a{color:var(--primary);font-weight:700}
+td.amt{font-weight:700}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}
+.d-refunded{background:#2f6bff}.d-refinit{background:#4b3bd0}.d-pending{background:#f2a100}.d-failed{background:#e5484d}.d-success{background:#2eb15a}.d-cancel{background:#9a9ab0}
+.pager{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;align-items:center}
+.pg{min-width:30px;height:30px;border-radius:15px;border:1px solid var(--line2);display:grid;place-items:center;font-size:11px;font-weight:500;background:#fff;padding:0 8px}
+.pg.wide{background:#ececec;border-color:transparent;min-width:40px}
+.pg.on{background:var(--dark);color:#fff;border-color:var(--dark)}
+.menu{position:absolute;z-index:30;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px rgba(37,37,60,.14);padding:6px;min-width:176px}
+.menu button{display:block;width:100%;text-align:left;padding:10px 12px;border-radius:8px;font-size:12px;font-weight:500}
+.menu button:hover{background:var(--primary-soft)}
+.menu button[disabled]{color:var(--faint);cursor:not-allowed;background:none}
+.filter{right:0;top:44px;width:266px;padding:16px;z-index:30;position:absolute}
+.filter label{display:block;font-size:11px;color:var(--muted);margin:0 0 6px;font-weight:500}
+.filter .f{margin-bottom:12px;position:relative}
+.field{width:100%;border:1px solid var(--line2);border-radius:10px;padding:10px 12px;background:#fff;font-size:12px;display:flex;justify-content:space-between;align-items:center;text-align:left;outline:0}
+.filter .acts{display:flex;gap:8px}
+.btn{height:40px;border-radius:24px;padding:0 24px;font-size:14px;font-weight:600;display:inline-flex;gap:8px;align-items:center;justify-content:center;border:1px solid var(--line2);background:#fff;white-space:nowrap}
+.btn.sm{height:32px;padding:0 16px;font-size:12px}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.dark{background:var(--dark);border-color:var(--dark);color:#fff}
+.btn.danger{background:#ea4a4f;border-color:#ea4a4f;color:#fff}
+.btn.outline-red{border-color:#e5484d;color:#c8262c}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.back{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:500;width:max-content}
+.back .iconbtn{width:32px;height:32px}
+.head{background:#fff;border-radius:24px;padding:16px;display:flex;justify-content:space-between;align-items:center}
+.head .amt{font-size:32px;font-weight:700;letter-spacing:-.5px;display:flex;align-items:center;gap:12px}
+.head .meta{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;margin-top:6px;font-weight:500}
+.head .acts{display:flex;gap:12px}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:4px 10px;border-radius:12px;border:1px solid}
+.b-success{background:var(--green-bg);color:var(--green-ink);border-color:#9fd8b4}
+.b-failed{background:var(--red-bg);color:var(--red-ink);border-color:#f0a8a8}
+.b-pending{background:var(--amber-bg);color:var(--amber-ink);border-color:#f0cf86}
+.b-refinit{background:var(--primary-soft);color:#2f1a99;border-color:#c2b8f3}
+.b-refunded{background:var(--blue-bg);color:var(--blue-ink);border-color:#aec6f7}
+.banner{display:flex;gap:12px;align-items:center;border-radius:12px;padding:12px 16px}
+.banner .tx{flex:1}
+.banner b{display:block;font-size:13px;font-weight:700;margin-bottom:2px}
+.banner span{font-size:11px;font-weight:500}
+.ban-failed{background:#fce8e8;color:var(--red-ink)}
+.ban-pending{background:var(--amber-bg);color:var(--amber-ink)}
+.ban-info{background:#e5ecff;color:var(--blue-ink)}
+.ban-success{background:#e0f5e8;color:var(--green-ink)}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.sec{background:#fff;border-radius:24px;padding:16px 20px 20px}
+.sec h3{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;margin-bottom:16px;color:var(--ink)}
+.sec h3 svg{color:var(--primary)}
+.sec h3 .badge{margin-left:auto}
+.panel{background:var(--panel);border-radius:16px;padding:0 16px}
+.line{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--line2)}
+.line:last-child{border-bottom:0}
+.line b{font-weight:500;font-size:13px;display:flex;gap:6px;align-items:center}
+.line small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.line .v{font-weight:700;font-size:13px}.line .v.n{font-weight:500}.line .v.faint{color:var(--faint)}
+.net{margin-top:16px;border-radius:16px;padding:16px;display:flex;justify-content:space-between;align-items:center}
+.net b{font-size:13px;font-weight:600;display:block}.net small{font-size:11px;color:var(--muted);display:block;margin-top:4px}.net .v{font-size:22px;font-weight:700}
+.net.green{background:#dff3e6}.net.green .v{color:#0f9d4a}
+.net.neutral{background:var(--panel)}.net.neutral .v{color:var(--muted)}
+.net.amber{background:var(--amber-bg)}.net.amber .v{color:var(--amber-ink)}
+.net.red{background:#fce8e8}.net.red .v{color:var(--red-ink)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 12px;background:var(--panel);border-radius:16px;padding:16px}
+.grid4 small{display:block;color:var(--muted);font-size:11px;margin-bottom:4px;font-weight:500}
+.grid4 b{font-size:11px;font-weight:600;display:flex;gap:6px;align-items:center}
+.cust{background:var(--panel);border-radius:16px;padding:4px 16px}
+.cust .rw{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line2)}.cust .rw:last-child{border:0}
+.cust small{display:block;color:var(--muted);font-size:11px;margin-bottom:4px;font-weight:500}.cust b{font-size:11px;font-weight:600}
+.tl{background:var(--panel);border-radius:16px;padding:12px 16px}
+.ti{display:flex;gap:12px;position:relative;padding-bottom:14px}
+.ti:last-child{padding-bottom:0}
+.ti .bul{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;flex:none;position:relative;z-index:1;margin-top:2px}
+.ti:not(:last-child):before{content:"";position:absolute;left:11px;top:28px;bottom:-2px;width:2px;background:#dcdcea}
+.ti .bul.done{background:#d6f0de;color:#12a150}.ti .bul.fail{background:#fadada;color:#d92d3a}.ti .bul.wait{background:#e6e1fb;color:var(--primary)}.ti .bul.idle{background:#e8e8ee}
+.ti b{font-size:13px;font-weight:600;display:block}.ti.fail b{color:var(--red-ink)}.ti small{font-size:11px;color:var(--muted);display:block;margin-top:3px}.ti.idle b{color:var(--muted)}
+.rtable thead th{font-size:10px}.rtable td{font-size:11px;font-weight:500;border:0;height:40px}.rtable td b{font-weight:700}
+.copy{color:var(--primary)}
+.overlay{position:fixed;inset:0;background:rgba(37,37,60,.5);display:grid;place-items:center;z-index:100;padding:16px;overflow:auto}
+.modal{background:#fff;border-radius:24px;padding:24px;width:440px;max-width:100%;position:relative}
+.modal.wide{width:520px}
+.modal h4{font-size:18px;font-weight:600;letter-spacing:-.2px}
+.modal .sub{font-size:11px;color:var(--muted);margin-top:4px;font-weight:500}
+.modal .x{position:absolute;right:20px;top:24px;width:24px;height:24px;display:grid;place-items:center;color:var(--ink)}
+.modal .lbl{font-size:11px;color:var(--muted);font-weight:500;margin:16px 0 6px;display:block}
+.input{width:100%;border:1px solid var(--line2);border-radius:12px;padding:11px 12px;font-size:13px;background:#fff;outline:0;display:flex;justify-content:space-between;align-items:center}
+.input:focus-within{border-color:var(--primary)}
+.input input{border:0;outline:0;flex:1;background:none;font-size:13px;min-width:0}
+.input.filled{background:var(--panel);border-color:var(--line)}
+.tag{font-size:11px;font-weight:500;border:1px solid var(--line2);border-radius:10px;padding:3px 8px;background:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line2);border-radius:20px;padding:8px 14px;font-size:12px;font-weight:500;background:#fff;display:inline-flex;gap:6px;align-items:center}
+.chip.on{border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}
+.sumbox{background:var(--panel);border-radius:12px;padding:12px 14px;margin-top:16px;display:flex;flex-direction:column;gap:8px}
+.sumbox div{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-weight:500}.sumbox b{color:var(--ink);font-weight:600}.sumbox .red{color:#d92d3a}.sumbox .bl{color:#1e4fc2}
+.note{font-size:11px;color:var(--muted);margin-top:12px}
+.callout{margin-top:16px;background:#e5ecff;color:#1e4fc2;border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+.callout b{font-size:13px;font-weight:700;display:block;margin-bottom:4px}.callout span{font-size:11px;line-height:1.4;display:block}.callout .tx{flex:1}
+.foot{display:flex;gap:12px;justify-content:flex-end;margin-top:20px}
+.foot .btn{flex:1}
+.foot.end .btn{flex:none;min-width:128px}
+.msgbox{border:1px solid var(--line2);border-radius:12px;padding:12px;font-size:13px;line-height:1.5;color:var(--ink);width:100%;resize:vertical;min-height:100px;outline:0;font-family:inherit}
+.center{text-align:center}
+.hero{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;margin:12px auto 12px}
+.hero.g{background:#d9f2e2;color:#12a150}.hero.a{background:#fdf0d2;color:#c27a00}
+.center .sub{margin:8px auto 0;max-width:340px;font-size:11px;line-height:1.5}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;padding:12px 20px;border-radius:24px;font-size:13px;font-weight:500;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.empty{text-align:center;color:var(--faint);padding:40px 0;font-size:13px}
+.head{flex-wrap:wrap;gap:12px}.head .meta{flex-wrap:wrap}.head .acts{flex-wrap:wrap}
+@media (max-width:1000px){.cols{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.grid4{grid-template-columns:repeat(2,1fr)}.card{overflow-x:auto}}
+@media (max-width:640px){.side{display:none}.head{flex-direction:column;align-items:flex-start;gap:12px}.head .acts{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef } = React;
+
+/* ---------- icons ---------- */
+const P = {
+  home:["m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z","M9 22V12h6v10"],
+  download:["M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4","m7 10 5 5 5-5","M12 15V3"],
+  send:["m22 2-7 20-4-9-9-4Z","M22 2 11 13"],
+  landmark:["M3 22h18","M6 18v-7","M10 18v-7","M14 18v-7","M18 18v-7","M12 2 3 7v3h18V7z"],
+  chart:["M3 3v16a2 2 0 0 0 2 2h16","M18 17V9","M13 17V5","M8 17v-3"],
+  file:["M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z","M14 2v4a2 2 0 0 0 2 2h4","M10 9H8","M16 13H8","M16 17H8"],
+  alert:["m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3","M12 9v4","M12 17h.01"],
+  sparkles:["M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"],
+  sun:["M12 2v2","M12 20v2","m4.93 4.93 1.41 1.41","m17.66 17.66 1.41 1.41","M2 12h2","M20 12h2","m6.34 17.66-1.41 1.41","m19.07 4.93-1.41 1.41","circle:12,12,4"],
+  bell:["M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9","M10.3 21a1.94 1.94 0 0 0 3.4 0"],
+  rupee:["M6 3h12","M6 8h12","m6 13 8.5 8","M6 13h3","M9 13c6.667 0 6.667-10 0-10"],
+  check:["M20 6 9 17l-5-5"],
+  circleCheck:["circle:12,12,10","m9 12 2 2 4-4"],
+  circleX:["circle:12,12,10","m15 9-6 6","m9 9 6 6"],
+  undo:["M9 14 4 9l5-5","M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"],
+  search:["circle:11,11,8","m21 21-4.3-4.3"],
+  filter:["M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"],
+  more:["circle:12,5,1","circle:12,12,1","circle:12,19,1"],
+  back:["m12 19-7-7 7-7","M19 12H5"],
+  copy:["rect:8,8,14,14,2","M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"],
+  share:["circle:18,5,3","circle:6,12,3","circle:18,19,3","M8.59 13.51l6.83 3.98","M15.41 6.51l-6.82 3.98"],
+  info:["circle:12,12,10","M12 16v-4","M12 8h.01"],
+  x:["M18 6 6 18","m6 6 12 12"],
+  clock:["circle:12,12,10","M12 6v6l4 2"],
+  user:["M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2","circle:12,7,4"],
+  receipt:["M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z","M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8","M12 17.5v-11"],
+  cl:["m15 18-6-6 6-6"],cr:["m9 18 6-6-6-6"],ccl:["m11 17-5-5 5-5","m18 17-5-5 5-5"],ccr:["m6 17 5-5-5-5","m13 17 5-5-5-5"],
+  cd:["m6 9 6 6 6-6"],
+  cal:["M8 2v4","M16 2v4","rect:3,4,18,18,2","M3 10h18"],
+};
+function Icon({n,s=20,sw=1.8,c}){
+  return <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c||"currentColor"} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+    {P[n].map((d,i)=>{
+      if(d.startsWith("circle:")){const[x,y,r]=d.slice(7).split(",");return <circle key={i} cx={x} cy={y} r={r}/>}
+      if(d.startsWith("rect:")){const[x,y,w,h,rx]=d.slice(5).split(",");return <rect key={i} x={x} y={y} width={w} height={h} rx={rx}/>}
+      return <path key={i} d={d}/>})}
+  </svg>;
+}
+
+/* ---------- data ---------- */
+const inr = n => "₹" + Number(n).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
+const STATUS = {
+  refunded:{label:"Refunded",dot:"d-refunded",badge:"b-refunded"},
+  refinit:{label:"Refund initiated",dot:"d-refinit",badge:"b-refinit"},
+  pending:{label:"Pending",dot:"d-pending",badge:"b-pending"},
+  failed:{label:"Failed",dot:"d-failed",badge:"b-failed"},
+  success:{label:"Success",dot:"d-success",badge:"b-success"},
+};
+const SEED = [
+  ["YEURB4FS404G","ORD-88421","Rahul Verma","UPI Intent","407813414008",2590,"refunded","3:32 PM","rahul@okhdfc","HDFC Bank","98"],
+  ["ZD8Y3K2F6T","ORD-88420","Ananya Iyer","Credit Card",null,12499,"failed","3:30 PM","ananya.i@example.com","ICICI Bank","99"],
+  ["LJ3M0K9W5X","ORD-88419","Karthik Rao","UPI QR","407813413992",850,"success","3:27 PM","karthik.r@okaxis","Axis Bank","90"],
+  ["QJ7P2T5D8H","ORD-88418","Meera Nair","Net Banking",null,6750,"pending","3:24 PM","meera.n@example.com","State Bank of India","97"],
+  ["QJ7P2T5D8J","ORD-88417","Imran Sheikh","Debit Card","407813413970",1299,"success","3:21 PM","imran.s@example.com","Kotak Bank","91"],
+  ["RT5N8V2C1B","ORD-88416","Sneha Kulkarni","UPI Intent","407813413951",3200,"refinit","3:18 PM","sneha.k@oksbi","SBI","98"],
+  ["WK2P7D4M9S","ORD-88415","Arjun Mehta","Wallet",null,499,"failed","3:15 PM","arjun.m@example.com","Paytm Wallet","96"],
+  ["HB6C3X8Z2Q","ORD-88414","Divya Reddy","Credit Card","407813413902",18750,"success","3:11 PM","divya.r@example.com","HDFC Bank","99"],
+  ["PN4T9G1L7E","ORD-88413","Rohit Gupta","UPI Collect","407813413887",1050,"success","3:08 PM","rohit.g@okicici","ICICI Bank","98"],
+  ["MC8Y2F6R3A","ORD-88412","Pooja Singh","EMI","407813413860",24990,"success","3:05 PM","pooja.s@example.com","Bajaj Finserv","93"],
+];
+const mkTxn = ([irn,order,cust,method,utr,amount,status,time,contact,bank,ph],i)=>({
+  irn,order,cust,method,utr,amount,status,time,contact,bank,
+  phone:`+91 ${ph}•••• •${String(210+i*37).slice(-3)}`, date:"29/10/26",
+  refund: status==="refunded" ? {id:"RFD-20432",state:"processed",at:"4:02 PM",arn:"640128845520"}
+        : status==="refinit" ? {id:"RFD-20432",state:"queued",at:"4:02 PM",deadline:Date.now()+(9*60+40)*1000}
+        : null,
+});
+
+/* ---------- helpers ---------- */
+const isCard = m => /Card/.test(m);
+const fees = a => { const f = +(a*0.018).toFixed(2); const g = +(f*0.18).toFixed(2); return {f,g,net:+(a-f-g).toFixed(2)}; };
+const first = n => n.split(" ")[0];
+const mask = s => s.replace(/(\d{2})\.(\d+)\.(\d+)/,"$1.•••.$3");
+const hhmm = d => d.toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit",hour12:true}).toUpperCase().replace(/\s/g," ");
+function fmtLeft(ms){ if(ms<=0) return "0 s"; const s=Math.floor(ms/1000); return `${Math.floor(s/60)} min ${String(s%60).padStart(2,"0")} s`; }
+
+function useNow(on){ const [n,setN]=useState(Date.now()); useEffect(()=>{ if(!on) return; const t=setInterval(()=>setN(Date.now()),1000); return ()=>clearInterval(t)},[on]); return n; }
+/* route lives in state and mirrors to the URL hash when the browser allows it (e.g. not in sandboxed previews) */
+function useRoute(){
+  const [h,setH]=useState(location.hash||"#/");
+  useEffect(()=>{const f=()=>setH(location.hash||"#/"); addEventListener("hashchange",f); return()=>removeEventListener("hashchange",f)},[]);
+  const nav=to=>{ setH(to); try{ location.hash=to; }catch(e){} };
+  return [h,nav];
+}
+
+/* ---------- shell ---------- */
+function Sidebar(){
+  const nav=[["home"],["download",1],["send"],["landmark"],["chart"],["file"],["alert"],["sparkles","ai"]];
+  return <aside className="side">
+    <div className="grp">
+      <div className="logo">P</div>
+      {nav.map(([n,k])=><a key={n} href={n==="download"?"#/":undefined} className={"nav"+(k===1?" on":"")+(k==="ai"?" ai":"")}><Icon n={n}/></a>)}
+    </div>
+    <div className="grp"><div className="nav"><Icon n="sun"/></div><div className="avatar">RS</div></div>
+  </aside>;
+}
+function Topbar({title}){
+  return <header className="top"><h1>{title}<span className="sub">Thursday, Oct 29</span></h1>
+    <div className="r"><button className="iconbtn" aria-label="Notifications"><Icon n="bell" s={18}/></button><div className="me">RS</div></div></header>;
+}
+function Shell({title,children}){ return <div className="shell"><Sidebar/><div className="main"><Topbar title={title}/>{children}</div></div>; }
+
+/* ---------- list ---------- */
+function StatusDot({s}){ const m=STATUS[s]; return <span><i className={"dot "+m.dot}/>{m.label}</span>; }
+
+function List({txns,go,openAction}){
+  const [q,setQ]=useState(""); const [fOpen,setF]=useState(false); const [menu,setMenu]=useState(null);
+  const [fs,setFs]=useState(""); const [applied,setApplied]=useState("");
+  const [sOpen,setSO]=useState(false);
+  const [page,setPage]=useState(2);
+  useEffect(()=>{const c=()=>setMenu(null); addEventListener("click",c); return()=>removeEventListener("click",c)},[]);
+  const rows=txns.filter(t=>(!applied||t.status===applied)&&(!q||[t.irn,t.order,t.cust,t.method,t.utr||""].join(" ").toLowerCase().includes(q.toLowerCase())));
+  return <Shell title="Collections">
+    <div className="kpis">
+      {[["rupee","Collected · Today","₹9,27,700.48",1],["circleCheck","Success rate","93.1%"],["circleX","Failed payments","1,365"],["undo","Refunds · Today","₹4,968.00"]].map(([i,l,v,p])=>
+        <div className="kpi" key={l}><div className={"ic"+(p?" p":"")}><Icon n={i} s={22}/></div><div><small>{l}</small><b>{v}</b></div></div>)}
+    </div>
+    <section className="card">
+      <div className="tools"><h2>All</h2>
+        <div className="r">
+          <label className="search"><Icon n="search" s={16}/><input placeholder="Search" value={q} onChange={e=>setQ(e.target.value)}/></label>
+          <button className={"pill"+(applied?" on":"")} onClick={e=>{e.stopPropagation();setF(!fOpen)}}><Icon n="filter" s={16}/>Filter{applied&&" · 1"}</button>
+          {fOpen&&<div className="menu filter" onClick={e=>e.stopPropagation()}>
+            <div className="f"><label>Date</label><div className="field" style={{color:"var(--faint)"}}>Select date<Icon n="cal" s={16}/></div></div>
+            <div className="f"><label>Time</label><div className="field" style={{color:"var(--faint)"}}>Select time<Icon n="cd" s={16}/></div></div>
+            <div className="f"><label>Status</label>
+              <button className="field" onClick={()=>setSO(!sOpen)}>{fs?STATUS[fs].label:<span style={{color:"var(--faint)"}}>Select status</span>}<Icon n="cd" s={16}/></button>
+              {sOpen&&<div className="menu" style={{left:0,right:0,top:44}}>{Object.entries(STATUS).map(([k,m])=>
+                <button key={k} onClick={()=>{setFs(k);setSO(false)}}><i className={"dot "+m.dot}/>{m.label}</button>)}</div>}
+            </div>
+            <div className="acts"><button className="btn sm" style={{flex:1}} onClick={()=>{setFs("");setApplied("");setF(false)}}>Reset</button>
+              <button className="btn sm primary" style={{flex:1}} disabled={!fs} onClick={()=>{setApplied(fs);setF(false)}}>Apply</button></div>
+          </div>}
+        </div>
+      </div>
+      <table>
+        <thead><tr>{["Date","IRN","Order ID","Customer","Method","UTR","Amount","Status","Action"].map(h=><th key={h}>{h}</th>)}</tr></thead>
+        <tbody>
+          {rows.map(t=><tr className="row" key={t.irn} onClick={()=>go(t.irn)}>
+            <td>{t.date}<span className="t">{t.time}</span></td>
+            <td><a>{t.irn}</a></td><td>{t.order}</td><td>{t.cust}</td><td>{t.method}</td><td>{t.utr||"–"}</td>
+            <td className="amt">{inr(t.amount)}</td><td><StatusDot s={t.status}/></td>
+            <td style={{position:"relative"}} onClick={e=>{e.stopPropagation();setMenu(menu===t.irn?null:t.irn)}}>
+              <Icon n="more" s={18} sw={2.4}/>
+              {menu===t.irn&&<div className="menu" style={{right:12,top:36}} onClick={e=>e.stopPropagation()}>
+                <button onClick={()=>{setMenu(null);openAction("download",t.irn)}}>Download receipt</button>
+                <button disabled={t.status!=="success"} onClick={()=>{setMenu(null);go(t.irn,"refund")}}>Refund payment</button>
+                <button onClick={()=>{setMenu(null);go(t.irn,"share")}}>Share</button>
+              </div>}
+            </td></tr>)}
+          {!rows.length&&<tr><td colSpan="9"><div className="empty">No payments match your search or filter.</div></td></tr>}
+        </tbody>
+      </table>
+      <div className="pager">
+        <button className="pg wide" onClick={()=>setPage(1)}><Icon n="ccl" s={14}/></button><button className="pg wide" onClick={()=>setPage(Math.max(1,page-1))}><Icon n="cl" s={14}/></button>
+        {[1,2,3,4,5].map(p=><button key={p} className={"pg"+(p===page?" on":"")} onClick={()=>setPage(p)}>{p}</button>)}
+        <button className="pg wide" onClick={()=>setPage(Math.min(5,page+1))}><Icon n="cr" s={14}/></button><button className="pg wide" onClick={()=>setPage(5)}><Icon n="ccr" s={14}/></button>
+      </div>
+    </section>
+  </Shell>;
+}
+
+/* ---------- detail model ---------- */
+function Info({s}){ return <Icon n="info" s={14} c="var(--faint)"/>; }
+function CopyBtn({v,toast}){ return <button className="copy" aria-label="Copy" onClick={()=>{navigator.clipboard&&navigator.clipboard.writeText(v).catch(()=>{});toast("Copied")}}><Icon n="copy" s={14}/></button>; }
+
+function model(t){
+  const {f,g,net}=fees(t.amount); const card=isCard(t.method); const R=t.refund;
+  const base={ title:inr(t.amount), irn:t.irn, order:t.order };
+  const cust=[["Customer",t.cust],["Phone",t.phone],["Bank",t.bank],["Method",card?`${t.method} ••${4242}`:t.method],["Email",t.contact.includes("@example")?t.contact:`${first(t.cust).toLowerCase()}@example.com`]];
+  const tdet = (a)=>[...a];
+  const ip = "49.36.•••.21";
+  if(t.status==="failed") return {...base,
+    badge:"failed", meta:`Attempted 29 Oct 2026, ${t.time}`,
+    banner:{kind:"failed",icon:"circleX",title:"Payment failed · Card declined by the issuing bank",text:"Bank code 05 · Do not honour. No money was collected. If the customer was debited, it is reversed automatically in 5–7 working days."},
+    actions:["share-fail","resend"],
+    bdTitle:"Amount attempted", lines:[["Amount attempted",`Order ${t.order} · ${t.method}`,inr(t.amount),"strong"],["Refunds","Not applicable","₹0.00"],["Chargebacks","Not applicable","₹0.00"],["Platform fee","Not charged on failed payments","₹0.00",0,1],["GST on fees","Not charged on failed payments","₹0.00",0,1]],
+    net:{cls:"neutral",title:"Net settlement",sub:"Nothing to settle for this payment",v:"₹0.00"},
+    tl:[["done","Order created",`29 Oct 2026, ${"3:29 PM"} · ${t.order}`],["done","Payment attempted",`${t.time} · ${card?"Visa ••4242 · 3-D Secure passed":t.method}`],["fail","Declined by bank",`${t.time} · Code 05 · Do not honour`],["idle","Settlement","Not applicable"]],
+    tlBadge:"failed", cust,
+    det:[["IRN",t.irn,1],["Error code","05 · Do not honour",1],["Issuer",`${t.bank} · Visa`],["Attempts","2 of 3 allowed"],["Device","Chrome · Windows"],["IP address","103.21.•••.8"],["Webhook","Delivered · payment.failed"],["Settlement","Not applicable"]],
+  };
+  if(t.status==="pending") return {...base,
+    badge:"pending", meta:`Initiated 29 Oct 2026, ${t.time}`,
+    banner:{kind:"pending",icon:"info",title:"Waiting for the bank to confirm",text:"Net banking payments can take up to 30 minutes to confirm. We re-check every 5 minutes. Do not ship the order or ask the customer to pay again until this clears."},
+    actions:["share"],
+    lines:[["Amount",`Order ${t.order} · ${t.method}`,inr(t.amount),"strong"],["Refunds","Not applicable yet","₹0.00"],["Chargebacks","Not applicable yet","₹0.00"],["Platform fee","Calculated once confirmed","Pending",0,1],["GST on fees","Calculated once confirmed","Pending",0,1]],
+    net:{cls:"amber",title:"Expected settlement",sub:"Settles after the bank confirms",v:inr(t.amount)},
+    tl:[["done","Order created",`29 Oct 2026, 3:23 PM · ${t.order}`],["done","Payment initiated",`${t.time} · ${t.method} · SBI`],["wait","Awaiting bank confirmation","Auto re-check in 3 min · expires 3:54 PM"],["idle","Settlement","Starts after confirmation"]],
+    tlBadge:"pending", cust,
+    det:[["IRN",t.irn,1],["Bank reference","Awaiting",1],["Last checked","3:36 PM · auto"],["Expires at","3:54 PM"],["Device","Safari · iPhone"],["IP address","157.48.•••.60"],["Webhook","Queued · payment.pending"],["Settlement","After confirmation"]],
+  };
+  // success / refinit / refunded / cancelled-refund (success + cancelled refund)
+  const cancelled = t.status==="success" && R && R.state==="cancelled";
+  const det0=[["IRN",t.irn,1],["UTR / RRN",t.utr,1],["Auth code","218934"],[card?"Card":"Customer UPI ID",card?`${t.method} ••4242 · Visa`:t.contact]];
+  const out={...base, meta:`Paid 29 Oct 2026, ${t.time}`, cust, tlBadge:t.status==="success"?"success":t.status};
+  const tl0=[["done","Order created",`29 Oct 2026, 3:31 PM · ${t.order}`],["done","Payment initiated",`3:31 PM · ${card?"Card · 3-D Secure":"UPI Intent via GPay"}`],["done","Payment captured",`${t.time} · Bank confirmed · UTR ${t.utr}`]];
+  if(t.status==="success"){
+    out.badge="success";
+    out.actions=["receipt","share","refund"];
+    out.lines=[["Amount paid",`Order ${t.order} · ${t.method}`,inr(t.amount),"strong"],["Refunds","No refunds on this payment","₹0.00"],["Chargebacks","No chargebacks raised","₹0.00"],["Platform fee",`1.8% blended MDR on ${inr(t.amount)}`,`- ${inr(f)}`,0,1],["GST on fees","18% of platform fee",`- ${inr(g)}`,0,1]];
+    out.net={cls:"green",title:"Net settlement",sub:"Settles 30 Oct 2026 · STL-20261029-02",v:inr(net)};
+    out.tl=[...tl0,["idle","Settlement","Expected 30 Oct 2026 · STL-20261029-02"]];
+    out.det=[...det0,["Device","Android · App"],["IP address",ip],["Webhook","Delivered · 200 OK"],["Receipt","Sent to customer"]];
+    if(cancelled){
+      out.banner={kind:"success",icon:"circleCheck",title:"Refund cancelled · no money moved",text:`Refund ${R.id} was cancelled before it reached the bank. This payment is back to Success and can be refunded again.`};
+      out.tl=[...tl0,["done","Refund initiated",`${R.at} · ${inr(t.amount)} · Instant · by RS`],["fail","Refund cancelled",`${R.cancelledAt} · ${R.reason||"No reason given"}`],["idle","Settlement","Expected 30 Oct 2026 · STL-20261029-02"]];
+      out.det=[...det0.slice(0,3),["Refund ID",R.id,1],["Refund ARN","Not generated"],["Initiated by","RS · Dashboard"],["Webhook","Delivered · refund.cancelled"],["Receipt","Sent to customer"]];
+      out.refunds=[[R.id,inr(t.amount),`29 Oct 2026, ${R.at}`,"Instant · UPI","None","cancel","Cancelled"]];
+    }
+    return out;
+  }
+  // refund in flight or complete
+  const done=t.status==="refunded";
+  out.badge=t.status;
+  out.actions=done?["receipt","share"]:["receipt","share","cancel"];
+  out.lines=[["Amount paid",`Order ${t.order} · ${t.method}`,inr(t.amount),"strong"],["Refunds",`1 refund · ${R.id}${done?"":" · Queued"}`,`- ${inr(t.amount)}`],["Chargebacks","No chargebacks raised","₹0.00"],["Platform fee",`1.8% on ${inr(t.amount)} · not returned`,`- ${inr(f)}`,0,1],["GST on fees","18% of platform fee",`- ${inr(g)}`,0,1]];
+  out.net={cls:"red",title:"Fee not returned",sub:"Platform fee + GST · deducted from your next settlement",v:`- ${inr(f+g)}`};
+  out.tl=[["done","Payment captured",`29 Oct 2026, ${t.time} · UTR ${t.utr}`],["done","Refund initiated",`${R.at} · ${inr(t.amount)} · Instant · by RS`],
+    done?["done","Customer credited",`4:04 PM · ARN ${R.arn}`]:["wait","Sending to bank",`Scheduled for 4:12 PM · can be cancelled until then`],
+    done?["idle","Adjusted in settlement",`STL-20261030-01 · - ${inr(f+g)}`]:["idle","Customer credited","After the bank confirms"]];
+  out.det=[["IRN",t.irn,1],["UTR / RRN",t.utr,1],["Refund ID",R.id],["Refund ARN",done?R.arn:"Not yet generated"],["Customer UPI ID",t.contact],["Initiated by","RS · Dashboard"],["Webhook",done?"Delivered · refund.processed":"Queued · refund.initiated"],["Receipt","Sent to customer"]];
+  out.refunds=[[R.id,inr(t.amount),`29 Oct 2026, ${R.at}`,"Instant · UPI",done?R.arn:"Not yet generated",done?"success":"refunded",done?"Processed":"Queued"]];
+  out.banner=done
+    ?{kind:"success",icon:"circleCheck",title:`Refund completed · ${inr(t.amount)} credited to the customer`,text:`Refund ${R.id} was credited on 29 Oct 2026, 4:04 PM. This payment is fully refunded and cannot be refunded again.`}
+    :{kind:"info",icon:"info",title:"Refund initiated · you can still cancel it",text:null,live:true};
+  return out;
+}
+
+/* ---------- detail page ---------- */
+function Banner({b,t,now}){
+  const [open,setOpen]=useState(true); useEffect(()=>setOpen(true),[b.title]);
+  if(!open) return null;
+  const text=b.live?`Refund ${t.refund.id} goes to ${t.bank} at 4:12 PM (in ${fmtLeft(t.refund.deadline-now)}). Cancel before then and no money leaves your account.`:b.text;
+  return <div className={"banner ban-"+b.kind}><Icon n={b.icon} s={20}/><div className="tx"><b>{b.title}</b><span>{text}</span></div>
+    <button onClick={()=>setOpen(false)} aria-label="Dismiss"><Icon n="x" s={18}/></button></div>;
+}
+
+function Detail({t,txns,back,dispatch,initial,toast}){
+  const [modal,setModal]=useState(initial||null);
+  const live=t.status==="refinit"; const now=useNow(live);
+  const m=model(t);
+  const closeM=()=>setModal(null);
+  useEffect(()=>{ document.title=`${t.irn} · Transaction detail`; },[t.irn]);
+  const actions={
+    receipt:<button key="r" className="btn" onClick={()=>toast("Receipt downloaded")}><Icon n="download" s={18}/>Download receipt</button>,
+    share:<button key="s" className="btn" onClick={()=>setModal(t.status==="failed"?"shareFail":"share")}><Icon n="share" s={18}/>Share</button>,
+    "share-fail":<button key="sf" className="btn" onClick={()=>setModal("shareFail")}><Icon n="share" s={18}/>Share failure reason</button>,
+    resend:<button key="rs" className="btn primary" onClick={()=>setModal("resend")}><Icon n="send" s={18}/>Resend payment link</button>,
+    refund:<button key="rf" className="btn primary" onClick={()=>setModal("refund")}><Icon n="undo" s={18}/>Refund payment</button>,
+    cancel:<button key="cx" className="btn outline-red" onClick={()=>{ (t.refund.deadline-Date.now()>0)?setModal("cancel"):setModal("late") }}><Icon n="circleX" s={18}/>Cancel refund</button>,
+  };
+  const label=STATUS[m.badge==="success"?"success":m.badge].label;
+  return <Shell title="Transaction detail">
+    <button className="back" onClick={back}><span className="iconbtn"><Icon n="back" s={18}/></span>Back to Collections</button>
+    <section className="head">
+      <div>
+        <div className="amt">{m.title}<span className={"badge "+STATUS[m.badge].badge}>{label}</span></div>
+        <div className="meta">IRN {t.irn} <CopyBtn v={t.irn} toast={toast}/> <span>·</span> {t.order} <span>·</span> {m.meta}</div>
+      </div>
+      <div className="acts">{m.actions.map(a=>actions[a])}</div>
+    </section>
+    {m.banner&&<Banner b={m.banner} t={t} now={now}/>}
+    <div className="cols">
+      <div className="col">
+        <section className="sec"><h3><Icon n="receipt" s={18}/>Payment breakdown</h3>
+          <div className="panel">{m.lines.map(([a,b,v,strong,info])=><div className="line" key={a}>
+            <div><b>{a}{info?<Info/>:null}</b><small>{b}</small></div>
+            <span className={"v"+(strong?"":(v==="Pending"?" n":""))+(v==="₹0.00"&&!strong?" n":"")} style={v==="₹0.00"&&m.badge==="failed"?{color:"var(--muted)"}:null}>{v}</span></div>)}</div>
+          <div className={"net "+m.net.cls}><div><b>{m.net.title}</b><small>{m.net.sub}</small></div><span className="v">{m.net.v}</span></div>
+        </section>
+        <section className="sec"><h3><Icon n="file" s={18}/>Transaction details</h3>
+          <div className="grid4">{m.det.map(([k,v,c])=><div key={k}><small>{k}</small><b>{v}{c?<CopyBtn v={v} toast={toast}/>:null}</b></div>)}</div>
+        </section>
+      </div>
+      <div className="col">
+        <section className="sec"><h3><Icon n="clock" s={18}/>Payment timeline<span className={"badge "+STATUS[m.tlBadge].badge}>{STATUS[m.tlBadge].label}</span></h3>
+          <div className="tl">{m.tl.map(([k,a,b])=><div className={"ti "+k} key={a}>
+            <span className={"bul "+k}>{k==="done"&&<Icon n="check" s={14} sw={2.4}/>}{k==="fail"&&<Icon n="x" s={14} sw={2.4}/>}{k==="wait"&&<Icon n="clock" s={14}/>}</span>
+            <div><b>{a}</b><small>{b}</small></div></div>)}</div>
+        </section>
+        <section className="sec"><h3><Icon n="user" s={18}/>Customer &amp; payment</h3>
+          <div className="cust">
+            <div className="rw"><div><small>Customer</small><b>{m.cust[0][1]}</b></div><div><small>Phone</small><b>{m.cust[1][1]}</b></div></div>
+            <div className="rw"><div><small>Bank</small><b>{m.cust[2][1]}</b></div><div><small>Method</small><b>{m.cust[3][1]}</b></div></div>
+            <div className="rw" style={{gridTemplateColumns:"1fr"}}><div><small>Email</small><b>{m.cust[4][1]}</b></div></div>
+          </div>
+        </section>
+      </div>
+    </div>
+    {m.refunds&&<section className="sec"><h3><Icon n="undo" s={18}/>Refunds</h3>
+      <table className="rtable"><thead><tr>{["Refund ID","Amount","Initiated","Mode","ARN","Status"].map(h=><th key={h}>{h}</th>)}</tr></thead>
+      <tbody>{m.refunds.map(r=><tr key={r[0]}><td>{r[0]}</td><td><b>{r[1]}</b></td><td>{r[2]}</td><td>{r[3]}</td><td>{r[4]}</td><td><i className={"dot "+(r[5]==="success"?"d-success":r[5]==="cancel"?"d-cancel":"d-refunded")}/>{r[6]}</td></tr>)}</tbody></table>
+    </section>}
+    {modal==="refund"&&<RefundModal t={t} close={closeM} onDone={(refund)=>{dispatch({type:"refund",irn:t.irn,refund}); setModal({done:refund})}}/>}
+    {modal&&modal.done&&<RefundDone t={t} r={modal.done} close={()=>setModal(null)}/>}
+    {modal==="resend"&&<ResendModal t={t} close={closeM} send={()=>{closeM();toast("Payment link sent to "+first(t.cust))}}/>}
+    {modal==="shareFail"&&<ShareFailModal t={t} close={closeM} send={()=>{closeM();toast("Message sent to "+first(t.cust))}}/>}
+    {modal==="share"&&<ShareReceiptModal t={t} close={closeM} send={()=>{closeM();toast("Receipt sent to "+first(t.cust))}}/>}
+    {modal==="cancel"&&<CancelModal t={t} now={now} close={closeM} onKeep={closeM} onCancel={(reason)=>{dispatch({type:"cancelRefund",irn:t.irn,reason,at:hhmm(new Date())});closeM();toast("Refund cancelled")}} late={()=>setModal("late")}/>}
+    {modal==="late"&&<LateModal t={t} close={()=>{closeM()}} onDone={()=>{dispatch({type:"processed",irn:t.irn});closeM()}} toast={toast}/>}
+  </Shell>;
+}
+
+/* ---------- modals ---------- */
+function Modal({children,close,wide}){
+  useEffect(()=>{const k=e=>e.key==="Escape"&&close(); addEventListener("keydown",k); return()=>removeEventListener("keydown",k)},[close]);
+  return <div className="overlay" onMouseDown={e=>e.target===e.currentTarget&&close()}><div className={"modal"+(wide?" wide":"")} role="dialog" aria-modal="true">{children}</div></div>;
+}
+const XBtn=({close})=><button className="x" onClick={close} aria-label="Close"><Icon n="x" s={20}/></button>;
+function Chips({items,sel,toggle,multi}){ return <div className="chips">{items.map(i=>{const on=multi?sel.includes(i):sel===i;
+  return <button key={i} className={"chip"+(on?" on":"")} onClick={()=>toggle(i)}>{on&&<Icon n="check" s={14} sw={2.2}/>}{i}</button>})}</div>; }
+function Callout({title,children}){ const [o,setO]=useState(true); if(!o)return null;
+  return <div className="callout"><Icon n="info" s={20}/><div className="tx"><b>{title}</b><span>{children}</span></div><button onClick={()=>setO(false)} aria-label="Dismiss"><Icon n="x" s={16}/></button></div>; }
+function useChannels(){ const [c,setC]=useState(["WhatsApp","SMS"]); return [c,i=>setC(c.includes(i)?c.filter(x=>x!==i):[...c,i])]; }
+
+function RefundModal({t,close,onDone}){
+  const [amt,setAmt]=useState(String(t.amount.toFixed(2))); const [why,setWhy]=useState("Customer request");
+  const n=parseFloat(amt); const bad=!(n>0&&n<=t.amount);
+  const full=n===t.amount;
+  const {f}=fees(t.amount);
+  return <Modal close={close}><XBtn close={close}/>
+    <h4>Refund payment</h4><div className="sub">{inr(t.amount)} · {t.order} · {t.cust}</div>
+    <span className="lbl">Refund amount</span>
+    <div className="input filled" style={bad?{borderColor:"var(--red)"}:null}><span style={{marginRight:6}}>₹</span><input inputMode="decimal" value={amt} onChange={e=>setAmt(e.target.value.replace(/[^0-9.]/g,""))}/>
+      <button className="tag" onClick={()=>setAmt(t.amount.toFixed(2))}>{full?"Full payment":"Set full"}</button></div>
+    {bad&&<div className="note" style={{color:"var(--red-ink)"}}>Enter an amount up to {inr(t.amount)}.</div>}
+    <span className="lbl">Reason</span>
+    <Chips items={["Customer request","Duplicate payment","Order cancelled","Item unavailable","Other"]} sel={why} toggle={setWhy}/>
+    <div className="sumbox">
+      <div>Refund to<b>{first(t.cust)}’s UPI · {t.contact}</b></div><div>Arrives<b>Instantly (UPI)</b></div>
+      <div>Platform fee<b>Not returned · {inr(f)}</b></div><div>Deducted from<b>Next settlement</b></div></div>
+    <p className="note">You can cancel this refund until the bank starts processing it.</p>
+    <div className="foot"><button className="btn" onClick={close}>Cancel</button>
+      <button className="btn dark" disabled={bad} onClick={()=>onDone({id:"RFD-20432",state:"queued",at:hhmm(new Date()),deadline:Date.now()+10*60*1000,amount:n})}>Refund {inr(bad?0:n)}</button></div>
+  </Modal>;
+}
+function RefundDone({t,r,close}){
+  return <Modal close={close}><XBtn close={close}/>
+    <div className="center"><div className="hero g"><Icon n="circleCheck" s={28}/></div><h4>Refund initiated</h4>
+      <p className="sub">{inr(r.amount||t.amount)} is on its way to {first(t.cust)}’s account and should arrive instantly. We’ll email the confirmation.</p></div>
+    <div className="sumbox" style={{marginTop:20}}><div>Refund ID<b>{r.id}</b></div><div>Status<b>Processing</b></div></div>
+    <div className="foot"><button className="btn" onClick={close}>Cancel</button><button className="btn dark" onClick={close}>Done</button></div>
+  </Modal>;
+}
+function ResendModal({t,close,send}){
+  const [ch,tg]=useChannels(); const [v,setV]=useState("24 hours");
+  return <Modal close={close}><XBtn close={close}/>
+    <h4>Resend payment link</h4><div className="sub">Create a fresh link for {t.order} · {inr(t.amount)}</div>
+    <span className="lbl">Send to</span><div className="input">{t.phone} · {t.cust}</div>
+    <span className="lbl">Send via</span><Chips multi items={["WhatsApp","SMS","Email"]} sel={ch} toggle={tg}/>
+    <span className="lbl">Link valid for</span>
+    <select className="input" value={v} onChange={e=>setV(e.target.value)}>{["1 hour","6 hours","24 hours","7 days"].map(o=><option key={o}>{o}</option>)}</select>
+    <Callout title="This creates a new payment">The failed attempt stays as Failed. If the customer pays through the new link, it appears as a separate transaction.</Callout>
+    <div className="foot end"><button className="btn" onClick={close}>Cancel</button><button className="btn primary" disabled={!ch.length} onClick={send}>Send link</button></div>
+  </Modal>;
+}
+function ShareFailModal({t,close,send}){
+  const [ch,tg]=useChannels();
+  const [msg,setMsg]=useState(`Hi ${first(t.cust)}, your payment of ${inr(t.amount)} for ${t.order} didn’t go through. Your bank declined the card (code 05 · Do not honour). No money was collected. Please try another card or UPI.`);
+  return <Modal close={close}><XBtn close={close}/>
+    <h4>Share failure reason</h4><div className="sub">Explain to the customer why {t.order} · {inr(t.amount)} failed</div>
+    <span className="lbl">Send to</span><div className="input">{t.phone} · {t.cust}</div>
+    <span className="lbl">Send via</span><Chips multi items={["WhatsApp","SMS","Email"]} sel={ch} toggle={tg}/>
+    <span className="lbl">Message preview</span><textarea className="msgbox" value={msg} onChange={e=>setMsg(e.target.value)}/>
+    <Callout title="No payment link is included">This message only explains the failure. Use Resend payment link if you want the customer to pay again.</Callout>
+    <div className="foot end"><button className="btn" onClick={close}>Cancel</button><button className="btn primary" disabled={!ch.length||!msg.trim()} onClick={send}>Send message</button></div>
+  </Modal>;
+}
+function ShareReceiptModal({t,close,send}){
+  const [ch,tg]=useChannels();
+  return <Modal close={close}><XBtn close={close}/>
+    <h4>Share receipt</h4><div className="sub">{t.order} · {inr(t.amount)} · Paid 29 Oct 2026, {t.time}</div>
+    <span className="lbl">Send to</span><div className="input">{t.phone} · {t.cust}</div>
+    <span className="lbl">Send via</span><Chips multi items={["WhatsApp","SMS","Email"]} sel={ch} toggle={tg}/>
+    <span className="lbl">Include</span><div className="input">Payment receipt · PDF</div>
+    <Callout title="The customer sees only their own details">Fees, settlement and internal IDs are never included in the shared receipt.</Callout>
+    <div className="foot end"><button className="btn" onClick={close}>Cancel</button><button className="btn primary" disabled={!ch.length} onClick={send}>Send receipt</button></div>
+  </Modal>;
+}
+function CancelModal({t,now,close,onKeep,onCancel,late}){
+  const [why,setWhy]=useState("Created by mistake"); const left=t.refund.deadline-now;
+  useEffect(()=>{ if(left<=0) late(); },[left<=0]);
+  const {amount}=t;
+  return <Modal close={close} wide><XBtn close={close}/>
+    <h4>Cancel this refund?</h4><div className="sub">It has not reached the bank yet</div>
+    <div className="sumbox" style={{marginTop:16}}><div>Refund ID<b>{t.refund.id}</b></div><div>Amount<b>{inr(amount)}</b></div><div>To<b>{t.cust} · {t.contact}</b></div><div>Goes to bank in<b className="red">{fmtLeft(left)}</b></div></div>
+    <span className="lbl">Reason (optional)</span>
+    <Chips items={["Created by mistake","Wrong amount","Customer changed mind","Other"]} sel={why} toggle={i=>setWhy(why===i?"":i)}/>
+    <Callout title="">The payment goes back to Success and {inr(amount)} can be refunded again later. The customer is not notified.</Callout>
+    <div className="foot end"><button className="btn" onClick={onKeep}>Keep refund</button><button className="btn danger" onClick={()=>onCancel(why)}>Cancel refund</button></div>
+  </Modal>;
+}
+function LateModal({t,close,onDone,toast}){
+  return <Modal close={close}><XBtn close={close}/>
+    <div className="center"><div className="hero a"><Icon n="alert" s={28}/></div><h4>Too late to cancel this refund</h4>
+      <p className="sub">{t.refund.id} was sent to {t.bank} at 4:12 PM. Refunds already with the bank cannot be stopped. {first(t.cust)} should see the money within a few minutes.</p></div>
+    <div className="sumbox" style={{marginTop:20}}><div>Refund ID<b>{t.refund.id}</b></div><div>Status<b className="bl">Processing</b></div></div>
+    <div className="foot"><button className="btn" onClick={()=>{toast("Query raised with support")}}>Raise a query</button><button className="btn dark" onClick={onDone}>Got it</button></div>
+  </Modal>;
+}
+
+/* ---------- app ---------- */
+function reducer(s,a){
+  const upd=(irn,fn)=>s.map(t=>t.irn===irn?fn(t):t);
+  if(a.type==="refund") return upd(a.irn,t=>({...t,status:"refinit",refund:a.refund}));
+  if(a.type==="cancelRefund") return upd(a.irn,t=>({...t,status:"success",refund:{...t.refund,state:"cancelled",reason:a.reason,cancelledAt:a.at}}));
+  if(a.type==="processed") return upd(a.irn,t=>({...t,status:"refunded",refund:{...t.refund,state:"processed",arn:"640128845520"}}));
+  return s;
+}
+function App(){
+  const [txns,dispatch]=React.useReducer(reducer,SEED.map(mkTxn));
+  const [hash,nav]=useRoute(); const [msg,setMsg]=useState(null);
+  const toast=m=>{setMsg(m); clearTimeout(toast.t); toast.t=setTimeout(()=>setMsg(null),2200)};
+  const mt=hash.match(/^#\/txn\/([^/?]+)(?:\?m=(\w+))?/);
+  const go=(irn,m)=>nav("#/txn/"+irn+(m?"?m="+m:""));
+  const t=mt&&txns.find(x=>x.irn===mt[1]);
+  useEffect(()=>{window.scrollTo(0,0)},[mt&&mt[1]]);
+  return <>
+    {t?<Detail key={t.irn+(mt[2]||"")} t={t} txns={txns} dispatch={dispatch} toast={toast} initial={mt[2]} back={()=>nav("#/")}/>
+      :<List txns={txns} go={go} openAction={(k)=>toast("Receipt downloaded")}/>}
+    {msg&&<div className="toast" role="status">{msg}</div>}
+  </>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
